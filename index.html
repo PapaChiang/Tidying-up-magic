@@ -219,4 +219,7 @@ window.addEventListener('DOMContentLoaded',renderHomeRecent);
 <script>
 (()=>{const bindRecordSave=()=>{const button=document.querySelector('#recordComposer .record-modal-footer .btn.primary');if(!button||button.dataset.directSaveBound)return;button.dataset.directSaveBound='1';button.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();try{if(typeof saveRecordFromModal==='function')saveRecordFromModal();else throw new Error('saveRecordFromModal unavailable')}catch(error){const toast=document.getElementById('toast');if(toast){toast.textContent='儲存時發生問題，請再試一次';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2400)}}},true)};if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',bindRecordSave);else bindRecordSave()})();
 </script>
+<script>
+(()=>{const ensureTotalCountElement=()=>{if(document.getElementById('totalCount'))return;const counter=document.createElement('span');counter.id='totalCount';counter.hidden=true;document.body.append(counter)};if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',ensureTotalCountElement);else ensureTotalCountElement()})();
+</script>
 </body></html>
