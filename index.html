@@ -377,4 +377,16 @@ body.basket-theme .basket-theme-toggle{color:#111;background:#ffd21c;border:2px 
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',install);else install();
 })();
 </script>
+<style>
+.basket-theme .basket-board{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:26px 0}.basket-board h3{font:800 20px Arial,sans-serif;margin:0 0 10px}.basket-stage{position:relative;aspect-ratio:1.13;background:#f1f1ed;overflow:hidden;box-shadow:5px 5px 0 #111}.basket-stage .basket-base{position:absolute;inset:4%;width:92%;height:92%;object-fit:contain;z-index:1}.basket-stage .basket-items{position:absolute;inset:20% 17% 15%;z-index:2}.basket-stage .basket-item{position:absolute;width:34%;max-height:39%;object-fit:contain;filter:drop-shadow(2px 3px 1px rgba(0,0,0,.22));transform:rotate(var(--angle));mix-blend-mode:multiply}.basket-stage .basket-item:nth-child(1){left:7%;top:10%}.basket-stage .basket-item:nth-child(2){right:8%;top:6%}.basket-stage .basket-item:nth-child(3){left:31%;top:31%}.basket-stage .basket-item:nth-child(4){right:22%;bottom:5%}.basket-stage .basket-empty{position:absolute;z-index:3;inset:44% 0 auto;text-align:center;font:700 15px Arial,sans-serif;color:#111}.basket-theme .basket-board .basket-label{display:inline-block;padding:5px 10px;border:2px solid #111;background:#ffd21c;box-shadow:3px 3px 0 #111;transform:rotate(-2deg)}@media(max-width:680px){.basket-theme .basket-board{grid-template-columns:1fr;gap:28px}.basket-stage{aspect-ratio:1.2}}
+</style>
+<script>
+(function(){
+  const esc=s=>typeof escapeHtml==='function'?escapeHtml(s):String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const panel=(title,items,color)=>'<section><h3><span class="basket-label" style="background:'+color+'">'+title+'</span></h3><div class="basket-stage"><img class="basket-base" src="./basket-cutout.png" alt=""><div class="basket-items">'+items.map((x,i)=>x.image?'<img class="basket-item" style="--angle:'+([-8,6,3,-5][i%4])+'deg" src="'+esc(x.image)+'" alt="'+esc(x.name)+'">':'').join('')+(items.some(x=>x.image)?'':'<div class="basket-empty">還沒有放入物品</div>')+'</div></div></section>';
+  window.renderBasketBoard=()=>{const page=document.getElementById('records');if(!page)return;let board=page.querySelector('.basket-board');if(!document.body.classList.contains('basket-theme')){board?.remove();return}const pending=JSON.parse(localStorage.getItem('declutterPending')||'[]'),records=typeof getAllRecords==='function'?getAllRecords():JSON.parse(localStorage.getItem('declutterRecords')||'[]');if(!board){board=document.createElement('div');board.className='basket-board';page.querySelector('.title-row').after(board)}board.innerHTML=panel('待處理籃',pending,'#ffd21c')+panel('已處理籃',records,'#55c66a')};
+  const observe=new MutationObserver(()=>window.renderBasketBoard?.());observe.observe(document.body,{attributes:true,attributeFilter:['class']});
+  window.addEventListener('DOMContentLoaded',()=>window.renderBasketBoard?.());
+})();
+</script>
 </body></html>
