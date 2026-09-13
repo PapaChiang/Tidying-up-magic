@@ -413,4 +413,14 @@ body.basket-theme .basket-theme-toggle{color:#111;background:#ffd21c;border:2px 
 <style>
 .record-modal-footer .btn[disabled]{opacity:.45;cursor:wait}.record-upload.is-processing{opacity:.72;pointer-events:none}.record-upload.is-processing .record-upload-placeholder{display:grid}
 </style>
+<script>
+/* Persist the processed cutout image and attach it to the just-created cloud row. */
+(function(){
+  const c=window.DECLUTTER_SUPABASE;if(!c)return;
+  const h={apikey:c.key,Authorization:'Bearer '+c.key,'Content-Type':'application/json'};
+  const upload=async data=>{if(!data||!data.startsWith('data:'))return null;const p=data.split(','),mime=(p[0].match(/data:(.*?);/)||[])[1]||'image/png',bytes=Uint8Array.from(atob(p[1]),x=>x.charCodeAt(0)),path=Date.now()+'-'+Math.random().toString(36).slice(2)+'.png',r=await fetch(c.url+'/storage/v1/object/declutter-photos/'+path,{method:'POST',headers:{apikey:c.key,Authorization:'Bearer '+c.key,'Content-Type':mime,'x-upsert':'true'},body:bytes});return r.ok?c.url+'/storage/v1/object/public/declutter-photos/'+path:null};
+  const attach=async(table,name,date,image)=>{const url=await upload(image);if(!url)return;const q=c.url+'/rest/v1/'+table+'?select=id&app_id=eq.'+encodeURIComponent(c.appId)+'&name=eq.'+encodeURIComponent(name)+'&record_date=eq.'+encodeURIComponent(date)+'&order=created_at.desc&limit=1',found=await fetch(q,{headers:h}).then(r=>r.json());if(found[0])await fetch(c.url+'/rest/v1/'+table+'?id=eq.'+found[0].id,{method:'PATCH',headers:{...h,Prefer:'return=minimal'},body:JSON.stringify({image_url:url})})};
+  const prior=window.saveRecordFromModal;window.saveRecordFromModal=async function(){const image=typeof uploadedImage!=='undefined'?uploadedImage:'',name=document.getElementById('recordItemName')?.value.trim(),date=document.getElementById('recordDate')?.value||todayISO(),status=document.querySelector('#recordActions .record-status .option.active')?.textContent||'待處理';await prior.apply(this,arguments);if(image&&name)attach(status==='待處理'?'declutter_pending':'declutter_records',name,date,image).catch(e=>console.warn('[image sync]',e))};
+})();
+</script>
 </body></html>
