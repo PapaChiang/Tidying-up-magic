@@ -295,4 +295,30 @@ window.DECLUTTER_SUPABASE={url:'https://jpvlbpvqrzppxhwkszus.supabase.co',key:'s
   window.addEventListener('DOMContentLoaded',()=>load().catch(e=>console.warn('[cloud pending load]',e)));
 })();
 </script>
+<script>
+/* Final two-lane save flow: pending and completed records never share a bucket. */
+(function(){
+  const setup=()=>{
+    const actions=document.getElementById('recordActions');if(!actions||actions.dataset.cleanFlow)return;actions.dataset.cleanFlow='1';
+    actions.addEventListener('click',event=>{
+      const button=event.target.closest('.option');if(!button)return;
+      const status=button.closest('.record-status'),dest=button.closest('.record-destinations');
+      if(status){status.querySelectorAll('.option').forEach(b=>b.classList.remove('active'));button.classList.add('active');const d=actions.querySelector('.record-destinations');if(d)d.hidden=button.textContent!=='已處理';}
+      else if(dest){dest.querySelectorAll('.option').forEach(b=>b.classList.remove('active'));button.classList.add('active');}
+      else return;
+      event.preventDefault();event.stopImmediatePropagation();
+    },true);
+  };
+  if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',setup);else setup();
+  const save=async()=>{
+    const name=document.getElementById('recordItemName')?.value.trim();if(!name){document.getElementById('recordItemName')?.focus();showToast('請先寫下物品名稱');return}
+    const statusButton=document.querySelector('#recordActions .record-status .option.active'),destinationButton=document.querySelector('#recordActions .record-destinations .option.active');
+    const status=statusButton?.textContent||(destinationButton?'已處理':'待處理'),destination=destinationButton?.textContent||'等等再決定',reason=document.querySelector('#recordComposer .record-reasons .option.active')?.textContent||'太久沒使用',date=document.getElementById('recordDate')?.value||todayISO(),farewell=document.getElementById('recordFarewell')?.value.trim()||'謝謝你陪我走過一段路。',image=typeof uploadedImage!=='undefined'?uploadedImage:'',clientId=crypto.randomUUID?crypto.randomUUID():String(Date.now());
+    const pending=JSON.parse(localStorage.getItem('declutterPending')||'[]'),records=JSON.parse(localStorage.getItem('declutterRecords')||'[]');
+    if(status==='待處理'){const item={clientId,name,action:'待處理 · '+destination,plannedAction:destination,reason,date,month:date.slice(0,7),farewell,image};pending.unshift(item);localStorage.setItem('declutterPending',JSON.stringify(pending));renderPendingList();showRecordSaved('已加入待處理清單',name);try{const h={apikey:DECLUTTER_SUPABASE.key,Authorization:'Bearer '+DECLUTTER_SUPABASE.key,'Content-Type':'application/json'};await fetch(DECLUTTER_SUPABASE.url+'/rest/v1/declutter_pending',{method:'POST',headers:{...h,Prefer:'return=minimal'},body:JSON.stringify({client_id:clientId,app_id:DECLUTTER_SUPABASE.appId,name,reason,farewell,planned_action:destination,record_date:date,image_url:null})});showToast('已同步到待處理清單')}catch(e){console.warn('[pending sync]',e)};return}
+    const item={name,action:'已處理 · '+destination,reason,date,month:date.slice(0,7),farewell,image,symbol:'▱',exhibitDate:date,exhibitHeadline:name,exhibitSubline:farewell,photoFilter:'original'};records.unshift(item);localStorage.setItem('declutterRecords',JSON.stringify(records));localStorage.setItem('total',String(records.length));renderRecordsGallery();decorateRecordMonths();showRecordSaved('已儲存到已處理清單',name);try{const h={apikey:DECLUTTER_SUPABASE.key,Authorization:'Bearer '+DECLUTTER_SUPABASE.key,'Content-Type':'application/json'};await fetch(DECLUTTER_SUPABASE.url+'/rest/v1/declutter_records',{method:'POST',headers:{...h,Prefer:'return=minimal'},body:JSON.stringify({app_id:DECLUTTER_SUPABASE.appId,name,action:item.action,reason,farewell,record_date:date,image_url:null})});showToast('已同步到已處理清單')}catch(e){console.warn('[record sync]',e)}
+  };
+  window.saveRecordFromModal=save;
+})();
+</script>
 </body></html>
