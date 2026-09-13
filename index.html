@@ -321,4 +321,21 @@ window.DECLUTTER_SUPABASE={url:'https://jpvlbpvqrzppxhwkszus.supabase.co',key:'s
   window.saveRecordFromModal=save;
 })();
 </script>
+<script>
+/* Mobile-safe persistence: a large camera image must not block the record itself. */
+(function(){
+  const original=localStorage.setItem.bind(localStorage);
+  localStorage.setItem=function(key,value){
+    try{return original(key,value)}
+    catch(error){
+      if((key==='declutterPending'||key==='declutterRecords')&&/quota|storage/i.test(String(error))){
+        const items=JSON.parse(value);items.forEach(item=>{if(item.image&&item.image.startsWith('data:'))item.image=''});
+        showToast('照片檔案較大，已先儲存文字紀錄');return original(key,JSON.stringify(items));
+      }
+      throw error;
+    }
+  };
+  window.addEventListener('unhandledrejection',event=>{if(String(event.reason||'').match(/quota|storage|randomUUID/i)){event.preventDefault();showToast('已儲存紀錄，照片同步稍後再試')}});
+})();
+</script>
 </body></html>
