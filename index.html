@@ -349,4 +349,32 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
   window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(error => console.warn('[pwa]', error)));
 }
 </script>
+<style>
+/* Experimental basket theme: a playful second visual system, data model unchanged. */
+body.basket-theme{--paper:#f7f7f4;--surface:#fff;--ink:#101010;--muted:#5e5e59;--line:#d7d7d0;--soft:#ecece5;--dark:#111;font-family:Arial,"Noto Sans TC",sans-serif;letter-spacing:0}
+body.basket-theme .brand h1,body.basket-theme .h1,body.basket-theme .section-title,body.basket-theme .record-name{font-family:Arial,"Noto Sans TC",sans-serif;font-weight:800;letter-spacing:-.02em}
+body.basket-theme .card,body.basket-theme .pending-section{border:0;box-shadow:5px 5px 0 #111;border-radius:0}
+body.basket-theme .stats{border:3px solid #111;box-shadow:5px 5px 0 #111}
+body.basket-theme .stats .card{border-right:3px solid #111}
+body.basket-theme .btn.primary,body.basket-theme .option.active{background:#e92c22;border-color:#111;color:#fff;box-shadow:3px 3px 0 #111}
+body.basket-theme .pending-section{position:relative;margin-top:26px;padding:28px 20px 22px;background:#a9d7ff;background-image:repeating-linear-gradient(0deg,transparent 0 16px,rgba(0,56,110,.18) 17px 19px),repeating-linear-gradient(90deg,transparent 0 16px,rgba(0,56,110,.18) 17px 19px)}
+body.basket-theme .pending-section:before{content:"待處理籃";display:block;width:max-content;margin:-47px 0 13px -6px;padding:7px 13px;background:#ffd21c;border:3px solid #111;font-weight:800;transform:rotate(-2deg);box-shadow:3px 3px 0 #111}
+body.basket-theme .pending-section h3{display:none}
+body.basket-theme .pending-item{border-top:2px solid #111;padding:12px 0}
+body.basket-theme .pending-item .photo{border:2px solid #111;background:#fff}
+body.basket-theme #records .records-gallery{position:relative;margin-top:34px;padding-top:28px}
+body.basket-theme #records .records-gallery:before{content:"已處理籃";position:absolute;top:-18px;left:0;padding:7px 13px;background:#55c66a;border:3px solid #111;font-weight:800;transform:rotate(2deg);box-shadow:3px 3px 0 #111}
+body.basket-theme #records .records-gallery .record-row{border:0!important;background:#fff;box-shadow:4px 4px 0 #111;padding:9px}
+body.basket-theme #records .records-gallery .photo{border:0}
+body.basket-theme .gallery-overlay{font-family:Arial,"Noto Sans TC",sans-serif;color:#ffd21c;text-shadow:2px 2px 0 #111}
+body.basket-theme .gallery-overlay strong,body.basket-theme .gallery-overlay small{font-family:inherit}
+body.basket-theme .basket-theme-toggle{color:#111;background:#ffd21c;border:2px solid #111;box-shadow:3px 3px 0 #111}
+</style>
+<script>
+(function(){
+  const apply=theme=>{document.body.classList.toggle('basket-theme',theme==='basket');localStorage.setItem('theme',theme);const b=document.getElementById('basketThemeToggle');if(b)b.textContent=theme==='basket'?'使用原本主題':'試用置物籃主題'};
+  const install=()=>{const drawer=document.getElementById('menuDrawer');if(!drawer||document.getElementById('basketThemeToggle'))return;const b=document.createElement('button');b.id='basketThemeToggle';b.className='drawer-item basket-theme-toggle';b.type='button';b.textContent=localStorage.getItem('theme')==='basket'?'使用原本主題':'試用置物籃主題';b.onclick=()=>{apply(localStorage.getItem('theme')==='basket'?'linen':'basket');closeMenu()};drawer.append(b);apply(localStorage.getItem('theme')||'linen')};
+  if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',install);else install();
+})();
+</script>
 </body></html>
