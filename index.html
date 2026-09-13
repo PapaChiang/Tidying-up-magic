@@ -286,4 +286,13 @@ window.DECLUTTER_SUPABASE={url:'https://jpvlbpvqrzppxhwkszus.supabase.co',key:'s
   window.saveRecordFromModal=wrapped;
 })();
 </script>
+<script>
+/* Load the shared pending list on every device. */
+(function(){
+  const c=window.DECLUTTER_SUPABASE;if(!c)return;
+  const h={apikey:c.key,Authorization:'Bearer '+c.key},url=c.url+'/rest/v1/declutter_pending?select=*&app_id=eq.'+encodeURIComponent(c.appId)+'&order=record_date.desc,created_at.desc';
+  const load=async()=>{const r=await fetch(url,{headers:h});if(!r.ok)throw Error('pending fetch failed');const rows=await r.json(),local=JSON.parse(localStorage.getItem('declutterPending')||'[]');if(!rows.length&&local.length)return;localStorage.setItem('declutterPending',JSON.stringify(rows.map(x=>({id:x.id,clientId:x.client_id,name:x.name,action:'待處理 · '+(x.planned_action||'等等再決定'),plannedAction:x.planned_action||'等等再決定',reason:x.reason||'太久沒使用',date:x.record_date,month:(x.record_date||'').slice(0,7),farewell:x.farewell||'',image:x.image_url||''}))));if(typeof renderPendingList==='function')renderPendingList()};
+  window.addEventListener('DOMContentLoaded',()=>load().catch(e=>console.warn('[cloud pending load]',e)));
+})();
+</script>
 </body></html>
