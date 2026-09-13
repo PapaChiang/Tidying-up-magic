@@ -1,0 +1,12 @@
+{
+  "name": "每日斷捨離",
+  "short_name": "斷捨離",
+  "description": "記錄已經離開生活的物品，看見自己如何變輕。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f4ef",
+  "theme_color": "#f7f4ef",
+  "lang": "zh-Hant",
+  "icons": [{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
