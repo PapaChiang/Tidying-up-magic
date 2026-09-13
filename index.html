@@ -271,4 +271,19 @@ window.DECLUTTER_SUPABASE={url:'https://jpvlbpvqrzppxhwkszus.supabase.co',key:'s
   window.confirmPendingProcess=async function(){const i=window.pendingProcessIndex,p=JSON.parse(localStorage.getItem('declutterPending')||'[]'),item=p[i];localComplete();if(!item)return;try{const action='已處理 · '+(document.querySelector('#pendingProcessModal .option.active')?.textContent||'等等再決定'),r=await fetch(recordsUrl,{method:'POST',headers:{...h,Prefer:'return=minimal'},body:JSON.stringify({app_id:c.appId,name:item.name,action,reason:item.reason||'',farewell:item.farewell||'',record_date:item.date||todayISO(),image_url:null})});if(!r.ok)throw Error('completed record sync failed');if(item.clientId)await fetch(pendingUrl+'?client_id=eq.'+encodeURIComponent(item.clientId),{method:'DELETE',headers:h});showToast('已同步到已斷捨離清單')}catch(e){console.warn('[cloud completion]',e)}};
 })();
 </script>
+<script>
+/* Normalize the two-step status before any legacy save handler runs. */
+(function(){
+  const save=window.saveRecordFromModal;
+  if(!save||save.__statusNormalized)return;
+  const wrapped=async function(){
+    const status=document.querySelector('#recordActions .record-status .option.active');
+    const destination=document.querySelector('#recordActions .record-destinations .option.active');
+    if(!status&&destination)document.querySelectorAll('#recordActions .record-status .option').forEach((b,i)=>b.classList.toggle('active',i===1));
+    return save.apply(this,arguments);
+  };
+  wrapped.__statusNormalized=true;
+  window.saveRecordFromModal=wrapped;
+})();
+</script>
 </body></html>
