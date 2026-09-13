@@ -396,4 +396,21 @@ body.basket-theme .basket-theme-toggle{color:#111;background:#ffd21c;border:2px 
   window.addEventListener('DOMContentLoaded',()=>{const input=document.getElementById('recordPhotoInput');if(!input)return;input.addEventListener('change',()=>setTimeout(async()=>{if(typeof uploadedImage==='undefined'||!uploadedImage)return;uploadedImage=await cutout(uploadedImage);const preview=document.querySelector('#recordUpload img');if(preview)preview.src=uploadedImage;window.renderBasketBoard?.()},0))});
 })();
 </script>
+<script type="module">
+/* Local AI background removal. The model runs in the browser; no photo API upload. */
+(function(){
+  let removerPromise;
+  const getRemover=()=>removerPromise||(removerPromise=import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm').then(m=>m.removeBackground));
+  const read=blob=>new Promise(resolve=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.readAsDataURL(blob)});
+  window.addEventListener('DOMContentLoaded',()=>{
+    const input=document.getElementById('recordPhotoInput'),upload=document.getElementById('recordUpload'),saveButton=document.querySelector('#recordComposer .record-modal-footer .btn.primary');if(!input||!upload)return;
+    input.addEventListener('change',async()=>{const file=input.files?.[0];if(!file)return;window.recordPhotoProcessing=true;saveButton?.setAttribute('disabled','disabled');upload.classList.add('is-processing');const placeholder=upload.querySelector('.record-upload-placeholder');if(placeholder)placeholder.innerHTML='<span class="upload-icon">◌</span><strong>正在去背…</strong><small>第一次使用會需要載入模型</small>';try{const removeBackground=await getRemover(),blob=await removeBackground(file,{output:{format:'image/png'}});uploadedImage=await read(blob);const preview=upload.querySelector('img');if(preview)preview.src=uploadedImage;upload.classList.remove('is-processing');saveButton?.removeAttribute('disabled');window.recordPhotoProcessing=false;showToast('去背完成，照片已準備好')}catch(error){console.warn('[ai cutout]',error);upload.classList.remove('is-processing');saveButton?.removeAttribute('disabled');window.recordPhotoProcessing=false;showToast('去背未完成，已保留原圖')}})
+  });
+  const originalSave=window.saveRecordFromModal;
+  window.saveRecordFromModal=async function(){if(window.recordPhotoProcessing){showToast('照片去背處理中，請稍候');return}return originalSave.apply(this,arguments)};
+})();
+</script>
+<style>
+.record-modal-footer .btn[disabled]{opacity:.45;cursor:wait}.record-upload.is-processing{opacity:.72;pointer-events:none}.record-upload.is-processing .record-upload-placeholder{display:grid}
+</style>
 </body></html>
