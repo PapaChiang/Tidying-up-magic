@@ -423,4 +423,14 @@ body.basket-theme .basket-theme-toggle{color:#111;background:#ffd21c;border:2px 
   const prior=window.saveRecordFromModal;window.saveRecordFromModal=async function(){const image=typeof uploadedImage!=='undefined'?uploadedImage:'',name=document.getElementById('recordItemName')?.value.trim(),date=document.getElementById('recordDate')?.value||todayISO(),status=document.querySelector('#recordActions .record-status .option.active')?.textContent||'待處理';await prior.apply(this,arguments);if(image&&name)attach(status==='待處理'?'declutter_pending':'declutter_records',name,date,image).catch(e=>console.warn('[image sync]',e))};
 })();
 </script>
+<script>
+/* Refresh basket contents whenever records or pending items change. */
+(function(){
+  const refresh=()=>setTimeout(()=>window.renderBasketBoard?.(),0);
+  const wrap=name=>{const fn=window[name];if(!fn||fn.__basketRefresh)return;const next=function(){const result=fn.apply(this,arguments);refresh();return result};next.__basketRefresh=true;window[name]=next};
+  wrap('renderRecordsGallery');wrap('renderPendingList');
+  const page=document.getElementById('records');if(page)new MutationObserver(refresh).observe(page,{childList:true,subtree:true});
+  const originalShow=window.showPage;if(originalShow&&!originalShow.__basketRefresh){const next=function(id){const result=originalShow.apply(this,arguments);if(id==='records')refresh();return result};next.__basketRefresh=true;window.showPage=next}
+})();
+</script>
 </body></html>
